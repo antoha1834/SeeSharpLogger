@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<Version>1.0.1</Version>
+		<Authors>antoha1834</Authors>
+		<PackageId>SeeSharpLogger</PackageId>
+		<Title>SeeSharpLogger</Title>
+		<Description>Console logging system with color output, file logging, and flexible settings.</Description>
+		<PackageTags>logging;console;logger;log;debug;diagnostics</PackageTags>
+		<RepositoryUrl>https://github.com/antoha1834/SeeSharpLogger</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl>https://github.com/antoha1834/SeeSharpLogger</PackageProjectUrl>
+		<IncludeSymbols>true</IncludeSymbols>
+		<IncludeSource>true</IncludeSource>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+	</PropertyGroup>
+
+</Project>
