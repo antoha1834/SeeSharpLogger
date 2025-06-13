@@ -11,8 +11,8 @@ This file describes all static methods of the Log class.
 - [File Logging](-#filelogging)
   - [EnableLogToFile](#-enablelogtofile)
   - [DisableLogToFile](#-disablelogtofile)
-- [Advanced](-#advanced)
-  - [Raw](-#raw)
+- [Advanced](#-advanced)
+  - [Raw](#-raw)
 
 # 📃 Basic
 
