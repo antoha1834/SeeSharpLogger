@@ -111,12 +111,13 @@ public class Log
         string fullPath = Path.Combine(path, fileName);
 
         _logFile = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-        AppDomain.CurrentDomain.ProcessExit += CloseFileStream;
+        AppDomain.CurrentDomain.ProcessExit += EndLoggerWork;
     }
 
-    private static void CloseFileStream(object? sender, EventArgs e)
+    private static void EndLoggerWork(object? sender, EventArgs e)
     {
-        _logFile?.Close();
+        if (_logToFile)
+        DisableLogToFile();
     }
 
     private static string ParseFormat(string input, string timeSplitter)
