@@ -1,6 +1,9 @@
 # ⛔ Static methods of Log
 
-В этом файле описаны все статичные методы класса `Log`.
+This file describes all static methods of the Log class.
+- [Basic](#-basic)
+  - [WriteLine](#-writeline)
+  - [RawLine](#-rawline)
 
 # 📃 Basic
 
