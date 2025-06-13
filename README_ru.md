@@ -7,13 +7,13 @@
 
 ## 🚀 Приступая к работе
 
-Изучите [примеры](#TODO) и [документацию](#TODO), чтобы начать.
+Изучите [примеры](https://github.com/antoha1834/SeeSharpLogger/tree/main/examples) и [документацию](https://github.com/antoha1834/SeeSharpLogger/tree/main/docs), чтобы начать.
 
 ## 📦 Установка
 
 **Через NuGet:**
 ```
-dotnet add package TODO package --version 1.0.5
+dotnet add package SeeSharpLogger
 ```
 **Вручную:**
 - Загрузите **.dll** с последнего [релиза](https://github.com/antoha1834/SeeSharpLogger/releases/latest)
