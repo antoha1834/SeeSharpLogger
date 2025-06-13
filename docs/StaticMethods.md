@@ -8,7 +8,7 @@ This file describes all static methods of the Log class.
   - [GetTimeStamp](#-gettimestamp)
   - [SetStateColor](#-setstatecolor)
   - [SetStatePrefix](#-setstateprefix)
-- [File Logging](-#filelogging)
+- [File Logging](#-filelogging)
   - [EnableLogToFile](#-enablelogtofile)
   - [DisableLogToFile](#-disablelogtofile)
 - [Advanced](#-advanced)
