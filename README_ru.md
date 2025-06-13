@@ -1,32 +1,31 @@
+
 ## SeeSharpLogger
 
 ![Static Badge](https://img.shields.io/badge/language-C%23-%2305a630?style=for-the-badge) ![Static Badge](https://img.shields.io/badge/.NET-6.0%2C%207.0%2C%208.0-%23c62ce8?style=for-the-badge)
 
-A simple and flexible console logging system with color output, file logging, and customizable settings.
+Система консольного логирования с цветным выводом, поддержкой записи в файл и гибкой конфигурацией.
 
-#### 📄 Read this in [Russian](https://github.com/antoha1834/SeeSharpLogger/blob/main/README_ru.md)
+## 🚀 Приступая к работе
 
-## 🚀 Getting Started
+Изучите [примеры](#TODO) и [документацию](#TODO), чтобы начать.
 
-Explore the [examples](https://github.com/antoha1834/SeeSharpLogger/tree/main/examples) and [documentation](https://github.com/antoha1834/SeeSharpLogger/tree/main/docs) to get started.
+## 📦 Установка
 
-## 📦 Installing
-
-**Via NuGet:**
+**Через NuGet:**
 ```
-dotnet add package SeeSharpLogger
+dotnet add package TODO package --version 1.0.5
 ```
-**Manual Download:**
-- Download the latest **.dll** from the [releases page](https://github.com/antoha1834/SeeSharpLogger/releases/latest)
+**Вручную:**
+- Загрузите **.dll** с последнего [релиза](https://github.com/antoha1834/SeeSharpLogger/releases/latest)
 
-## 💡 Capabilities
+## 💡 Возможности
 
-- Multiple log levels: `Unimportant`, `Log`, `Info`, `Success`, `Error`, `Warning`
-- Colored output in the console
-- File logging support
-- Customizable prefixes and colors per log level
+- Несколько уровней логирования: `Unimportant`, `Log`, `Info`, `Success`, `Error`, `Warning`
+- Цветной вывод в консоль
+- Запись журнала в файл
+- Собственная настройка префиксов и цветов
 
-## 🧪 Example
+## 🧪 Пример использования
 
 ```csharp
 // Named source
@@ -47,7 +46,7 @@ Log.SetStatePrefix(LogState.Error, "[ERROR] ");
 mainLog.WriteLine("Now the errors have become even more scary", LogState.Error);
 ```
 
-### 🖨️ Example Output
+### 🖨️ Вывод
 
 ```
 [Timestamp] [+] [Main] App started successfully  
