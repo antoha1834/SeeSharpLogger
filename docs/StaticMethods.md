@@ -4,6 +4,15 @@ This file describes all static methods of the Log class.
 - [Basic](#-basic)
   - [WriteLine](#-writeline)
   - [RawLine](#-rawline)
+  - [SkipLine](#-skipline)
+  - [GetTimeStamp](#-gettimestamp)
+  - [SetStateColor](#-setstatecolor)
+  - [SetStatePrefix](#-setstateprefix)
+- [File Logging](-#filelogging)
+  - [EnableLogToFile](#-enablelogtofile)
+  - [DisableLogToFile](#-disablelogtofile)
+- [Advanced](-#advanced)
+  - [Raw](-#raw)
 
 # 📃 Basic
 
