@@ -56,3 +56,7 @@ mainLog.WriteLine("Now the errors have become even more scary", LogState.Error);
 [Timestamp] [i] [Update] Now the color for LogState.Info is blue!  
 [Timestamp] [ERROR] [Main] Now the errors have become even more scary
 ```
+
+## 💬 Feedback
+Есть мысли, идеи или нашли ошибку?
+Вы можете свободно открыть [вопрос](https://github.com/antoha1834/SeeSharpLogger/issues) или начать [обсуждение](https://github.com/antoha1834/SeeSharpLogger/discussions) — буду рад слышать!
