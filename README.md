@@ -1,6 +1,7 @@
 ## SeeSharpLogger
 
-![Static Badge](https://img.shields.io/badge/language-C%23-%2305a630?style=for-the-badge) ![Static Badge](https://img.shields.io/badge/.NET-6.0%2C%207.0%2C%208.0-%23c62ce8?style=for-the-badge)
+![Static Badge](https://img.shields.io/badge/language-C%23-%2305a630?style=for-the-badge) ![Static Badge](https://img.shields.io/badge/.NET-6.0%2C%207.0%2C%208.0-%23c62ce8?style=for-the-badge) ![Static Badge](https://img.shields.io/badge/thread%20safe-%2358bbfc?style=for-the-badge)
+
 
 A simple and flexible console logging system with color output, file logging, and customizable settings.
 
