@@ -24,8 +24,9 @@ dotnet add package SeeSharpLogger
 
 - Multiple log levels: `Unimportant`, `Log`, `Info`, `Success`, `Error`, `Warning`
 - Colored output in the console
-- File logging support
+- Multiple file logging support
 - Customizable prefixes and colors per log level
+- Thread safety
 
 ## 🧪 Example
 
