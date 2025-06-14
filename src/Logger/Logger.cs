@@ -88,7 +88,10 @@ namespace SeeSharpLogger
             byte[] text = new UTF8Encoding(true).GetBytes(value);
 
             if (_channels.TryGetValue(channel, out FileStream stream))
+            {
                 stream.Write(text, 0, text.Length);
+                stream.Flush();
+            }
         }
 
         public static bool StopChannel(string channel)
