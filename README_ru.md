@@ -15,8 +15,6 @@
 ```
 dotnet add package SeeSharpLogger
 ```
-**Вручную:**
-- Загрузите **.dll** с последнего [релиза](https://github.com/antoha1834/SeeSharpLogger/releases/latest)
 
 ## 💡 Возможности
 

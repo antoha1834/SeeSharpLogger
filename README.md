@@ -17,8 +17,6 @@ Explore the [examples](https://github.com/antoha1834/SeeSharpLogger/tree/main/ex
 ```
 dotnet add package SeeSharpLogger
 ```
-**Manual Download:**
-- Download the latest **.dll** from the [releases page](https://github.com/antoha1834/SeeSharpLogger/releases/latest)
 
 ## 💡 Capabilities
 
