@@ -111,7 +111,7 @@ Log.SetStateColor(LogState.Info, ConsoleColor.Blue); // Future messages with Log
 
 ## 🏷 SetStatePrefix
 
-Глобально меняет префикс для одного LogState
+Globally changes the prefix associated with a specific `LogState`.
 
 | Argument                | Assignment                                  |
 |-------------------------|---------------------------------------------|
