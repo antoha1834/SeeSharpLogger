@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace SeeSharpLogger
 {
@@ -22,30 +24,134 @@ namespace SeeSharpLogger
     internal static class Maps
     {
         public static readonly Dictionary<LogState, string> prefixMap = new()
-    {
-        {LogState.Log, "[*] "},
-        {LogState.Error, "[X] "},
-        {LogState.Warning, "[!] "},
-        {LogState.Success, "[+] "},
-        {LogState.Info, "[i] "},
-        {LogState.Unimportant, "[-] "}
-    };
+        {
+            {LogState.Log, "[*] "},
+            {LogState.Error, "[X] "},
+            {LogState.Warning, "[!] "},
+            {LogState.Success, "[+] "},
+            {LogState.Info, "[i] "},
+            {LogState.Unimportant, "[-] "}
+        };
 
         public static readonly Dictionary<LogState, ConsoleColor> colorMap = new()
-    {
-        {LogState.Log, ConsoleColor.White},
-        {LogState.Error, ConsoleColor.Red},
-        {LogState.Warning, ConsoleColor.Yellow},
-        {LogState.Success, ConsoleColor.Green},
-        {LogState.Info, ConsoleColor.Cyan},
-        {LogState.Unimportant, ConsoleColor.DarkGray}
-    };
+        {
+            {LogState.Log, ConsoleColor.White},
+            {LogState.Error, ConsoleColor.Red},
+            {LogState.Warning, ConsoleColor.Yellow},
+            {LogState.Success, ConsoleColor.Green},
+            {LogState.Info, ConsoleColor.Cyan},
+            {LogState.Unimportant, ConsoleColor.DarkGray}
+        };
     }
 
-#nullable enable
-    public class Log
+    public static class LogFileChannel
     {
-        public string Name { get; set; }
+        private static Dictionary<string, FileStream> _channels = new();
+
+        /// <summary>
+        /// Sets the .log file path
+        /// </summary>
+        /// <param name="directory">directory for the .log files</param>
+        /// <param name="format">format for the .log file name</param>
+        /// <param name="safeReplacer">replacement for prohibited characters in Windows file/folder names</param>
+        public static bool BeginChannel(string name, string directory, string format, char safeReplacer = '-')
+        {
+            if (_channels.ContainsKey(name)) {
+                return false;
+            }
+
+            Directory.CreateDirectory(directory);
+
+            if (!directory.EndsWith('\\') && !directory.EndsWith('/'))
+            {
+                directory += "\\";
+            }
+
+            string fileName = ParseFormat(format, safeReplacer);
+            string fullPath = Path.Combine(directory, fileName);
+
+            FileStream _fileStream = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.Read);
+            _channels.Add(name, _fileStream);
+
+            AppDomain.CurrentDomain.ProcessExit += StopAllChannels;
+
+            return true;
+        }
+
+        public static bool IsChannelExists(string channel)
+        {
+            return _channels.ContainsKey(channel);
+        }
+
+        public static void Write(string channel, string value)
+        {
+            byte[] text = new UTF8Encoding(true).GetBytes(value);
+
+            if (_channels.TryGetValue(channel, out FileStream stream))
+                stream.Write(text, 0, text.Length);
+        }
+
+        public static bool StopChannel(string channel)
+        {
+            if (_channels.ContainsKey(channel) && _channels.TryGetValue(channel, out FileStream fileStream))
+            {
+                fileStream.Flush();
+                fileStream.Dispose();
+                _channels.Remove(channel);
+                return true;
+            }
+
+            return false;
+        }
+
+        private static void StopAllChannels(object sender, EventArgs e)
+        {
+            foreach (KeyValuePair<string, FileStream> channel in _channels)
+            {
+                channel.Value.Flush();
+                channel.Value.Dispose();
+            }
+        }
+
+        private static string ParseFormat(string input, char safeReplacer)
+        {
+            return WindowsSafeName(
+                input.Replace("<Date>", DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern))
+                     .Replace("<Time>", DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern)),
+                safeReplacer);
+        }
+
+        public static string WindowsSafeName(string input, char safeReplacer)
+        {
+            return input.Replace('/', safeReplacer)
+                        .Replace('\\', safeReplacer)
+                        .Replace(':', safeReplacer)
+                        .Replace('?', safeReplacer)
+                        .Replace('*', safeReplacer)
+                        .Replace('\"', safeReplacer)
+                        .Replace('<', safeReplacer)
+                        .Replace('>', safeReplacer)
+                        .Replace('|', safeReplacer);
+        }
+    }
+
+    public class NonExistingLogChannelException : Exception
+    {
+        public NonExistingLogChannelException(string name) : base($"Log file channel {name} does not exist") { }
+    }
+
+    /// <summary>
+    /// Configuration of the Log and its static methods
+    /// </summary>
+    public static class LogManager
+    {
+        public static class Exceptions
+        {
+            /// <summary>
+            /// Occurs with the Log(string name, string channel) constructor when there is no channel with the specified name
+            /// </summary>
+            public static bool ThrowOnNonExistingChannel { get; set; } = false;
+        }
 
         /// <summary>
         /// Default source for static calls of Write() / WriteLine()
@@ -58,119 +164,98 @@ namespace SeeSharpLogger
         public static string DefaultPrefix { get; set; } = "[?] ";
 
         /// <summary>
-        /// Should the log be written to a file?
+        /// Should timestamp be added by default?
         /// </summary>
-        public static bool LogToFile { get => _logToFile; }
-        private static bool _logToFile = false;
-
         public static bool AddTimeStamp { get; set; } = true;
 
-        private static FileStream? _logFile;
+        /// <summary>
+        /// Globally changes the prefix for one LogState
+        /// </summary>
+        /// <param name="state">LogState to change prefix</param>
+        /// <param name="newPrefix">new prefix</param>
+        public static void SetStatePrefix(LogState state, string newPrefix)
+        {
+            Maps.prefixMap[state] = newPrefix;
+        }
 
         /// <summary>
-        /// Create new Log instance with only name specified (without logging to the file)
+        /// Globally changes the color for one LogState
+        /// </summary>
+        /// <param name="state">LogState to change color</param>
+        /// <param name="newColor">new color</param>
+        public static void SetStateColor(LogState state, ConsoleColor newColor)
+        {
+            Maps.colorMap[state] = newColor;
+        }
+    }
+
+#nullable enable
+    /// <summary>
+    /// Create new Log instance with only name specified (without logging to the file)
+    /// </summary>
+    /// <param name="name">source</param>
+    public class Log
+    {
+        public string Name { get; set; }
+
+        public bool AddTimeStamp { get; set; } = true;
+
+        /// <summary>
+        /// Log file channel name for current logger
+        /// </summary>
+        public string? ChannelName { get => _logFileChannel; }
+
+        private string? _logFileChannel;
+
+        /// <summary>
+        /// Instance with only logging to the console (no file logging)
         /// </summary>
         /// <param name="name">source</param>
-        public Log(string name) => Name = name;
+        public Log(string name)
+        {
+            Name = name;
+            _logFileChannel = null;
+        }
 
         /// <summary>
-        /// Create new Log instance with only name specified (with logging to the file)
+        /// Instance with console and file logging (new LogFileChannel will be created)
         /// </summary>
-        /// <param name="name">source that would be added to formatted log</param>
-        /// <param name="path">directory for the .log files</param>
+        /// <param name="name">source</param>
+        /// <param name="channel">channel name for file logging</param>
+        /// <param name="directory">directory for the .log files</param>
         /// <param name="format">format for the .log file name</param>
-        /// <param name="timeSplitter">time splitter (replace of ":")</param>
         /// <param name="addTimeStamp">should a timestamp be added to each message</param>
-        public static void EnableLogToFile(string path, string format, bool addTimeStamp = true, string timeSplitter = "-")
+        /// <param name="safeReplacer">replacement for prohibited characters in Windows file/folder names</param>
+        public Log(string name, string channel, string directory, string format, bool addTimeStamp = true, char safeReplacer = '-')
         {
-            _logToFile = true;
             AddTimeStamp = addTimeStamp;
-
-            SetPath(path, format, timeSplitter);
-        }
-
-        public static void DisableLogToFile()
-        {
-            _logToFile = false;
-            AddTimeStamp = false;
-
-            _logFile?.Flush();
-            _logFile?.Dispose();
+            Name = name;
+            LogFileChannel.BeginChannel(channel, directory, format, safeReplacer);
+            _logFileChannel = channel;
         }
 
         /// <summary>
-        /// Sets the .log file path
+        /// Intance with console and file logging (will use existing LogFileChannel)
         /// </summary>
-        /// <param name="path">directory for the .log files</param>
-        /// <param name="format">format for the .log file name</param>
-        /// <param name="timeSplitter">time splitter (replace of ":")</param>
-        private static void SetPath(string path, string format, string timeSplitter = "-")
+        /// <param name="name">source</param>
+        /// <param name="channel">existing channel name</param>
+        public Log(string name, string channel)
         {
-            Directory.CreateDirectory(path);
-
-            if (!path.EndsWith('\\') && !path.EndsWith('/'))
-            {
-                path += "\\";
-            }
-
-            string fileName = ParseFormat(format, timeSplitter);
-            string fullPath = Path.Combine(path, fileName);
-
-            _logFile = new FileStream(fullPath, FileMode.Create, FileAccess.Write, FileShare.Read);
-            AppDomain.CurrentDomain.ProcessExit += EndLoggerWork;
+            Name = name;
+            if (LogFileChannel.IsChannelExists(channel))
+                _logFileChannel = channel;
+            else if (LogManager.Exceptions.ThrowOnNonExistingChannel) throw new NonExistingLogChannelException(channel);
         }
 
-        private static void EndLoggerWork(object? sender, EventArgs e)
+        public void StopLoggingToFile()
         {
-            if (_logToFile)
-                DisableLogToFile();
+            if (_logFileChannel != null)
+                LogFileChannel.StopChannel(_logFileChannel);
         }
 
-        private static string ParseFormat(string input, string timeSplitter)
+        private void EndLoggerWork(object? sender, EventArgs e)
         {
-            return input.Replace("<Date>", DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortDatePattern))
-                        .Replace("<Time>", DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.ShortTimePattern).Replace(":", timeSplitter));
-        }
-
-        private static void AddText(FileStream? fs, string value)
-        {
-            byte[] info = new UTF8Encoding(true).GetBytes(value);
-            fs?.Write(info, 0, info.Length);
-        }
-
-        private static readonly object _rawLock = new();
-
-        // base for colored + prefixed writing
-        private static void RawWrite(string prefix = "", string from = "", string? message = null, ConsoleColor color = ConsoleColor.White)
-        {
-            lock (_rawLock)
-            {
-                Console.ForegroundColor = color;
-                Console.Write($"{prefix}{from}{message}");
-
-                if (LogToFile)
-                    AddText(_logFile, $"{prefix}{from}{message}");
-
-                Console.ResetColor();
-            }
-        }
-
-        // base for correct writing
-        private static void CoreWrite(object? message, string from = "Anonymous", LogState state = LogState.Log)
-        {
-            if (Maps.prefixMap.TryGetValue(state, out var prefix) && Maps.colorMap.TryGetValue(state, out var color))
-            {
-                RawWrite(AddTimeStamp ? $"[{GetTimeStamp()}] {prefix}" : prefix, $"[{from}] ", message?.ToString(), color);
-            }
-            else
-            {
-                RawWrite(DefaultPrefix, DefaultSource, message?.ToString(), ConsoleColor.DarkGray);
-            }
-        }
-
-        public static string GetTimeStamp()
-        {
-            return DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.FullDateTimePattern);
+            StopLoggingToFile();
         }
 
         /// <summary>
@@ -178,24 +263,55 @@ namespace SeeSharpLogger
         /// </summary>
         public void WriteLine(object? message = null, LogState state = LogState.Log)
         {
-            CoreWrite(message + Environment.NewLine, Name, state);
+            string result = CoreWrite(message + Environment.NewLine, Name, AddTimeStamp, state);
+            if (_logFileChannel != null)
+                LogFileChannel.Write(_logFileChannel, result);
+        }
+
+        private static readonly object _rawLock = new();
+
+        // base for colored + prefixed writing
+        private static string RawWrite(string prefix = "", string from = "", string? message = null, ConsoleColor color = ConsoleColor.White)
+        {
+            lock (_rawLock)
+            {
+                Console.ForegroundColor = color;
+                Console.Write($"{prefix}{from}{message}");
+                Console.ResetColor();
+
+                return $"{prefix}{from}{message}";
+            }
+        }
+
+        // base for correct writing
+        private static string CoreWrite(object? message, string from = "Anonymous", bool addTimeStamp = true, LogState state = LogState.Log)
+        {
+            if (Maps.prefixMap.TryGetValue(state, out var prefix) && Maps.colorMap.TryGetValue(state, out var color))
+            {
+                return RawWrite(addTimeStamp ? $"[{GetTimeStamp()}] {prefix}" : prefix, $"[{from}] ", message?.ToString(), color);
+            }
+            else
+            {
+                return RawWrite(LogManager.DefaultPrefix, LogManager.DefaultSource, message?.ToString(), ConsoleColor.DarkGray);
+            }
         }
 
         /// <summary>
         /// Writes a new line with the specified LogState and source
         /// </summary>
-
         public static void WriteLine(object? message = null, string? from = null, LogState state = LogState.Log)
         {
-            from ??= DefaultSource;
-            CoreWrite(message + Environment.NewLine, from, state);
+            from ??= LogManager.DefaultSource;
+            CoreWrite(message + Environment.NewLine, from, LogManager.AddTimeStamp, state);
         }
 
         /// <summary>
-        /// Writes a string without prefixes and line break
+        /// Writes a string to the console without prefixes or line breaks.
+        /// [!] Intended for advanced use. For regular output, prefer <see cref="RawLine(object, ConsoleColor)"/>.
         /// </summary>
-        /// <param name="message">string to write</param>
-        /// <param name="color">color of stringto write</param>
+        /// <remarks>
+        /// Useful when building complex console output manually.
+        /// </remarks>
         public static void Raw(object? message = null, ConsoleColor color = ConsoleColor.White)
         {
             RawWrite("", "", message?.ToString(), color);
@@ -219,24 +335,9 @@ namespace SeeSharpLogger
             RawWrite("", "", Environment.NewLine);
         }
 
-        /// <summary>
-        /// Globally changes the prefix for one LogState
-        /// </summary>
-        /// <param name="state">LogState to change prefix</param>
-        /// <param name="newPrefix">new prefix</param>
-        public static void SetStatePrefix(LogState state, string newPrefix)
+        public static string GetTimeStamp()
         {
-            Maps.prefixMap[state] = newPrefix;
-        }
-
-        /// <summary>
-        /// Globally changes the color for one LogState
-        /// </summary>
-        /// <param name="state">LogState to change color</param>
-        /// <param name="newColor">new color</param>
-        public static void SetStateColor(LogState state, ConsoleColor newColor)
-        {
-            Maps.colorMap[state] = newColor;
+            return DateTime.Now.ToString(CultureInfo.CurrentCulture.DateTimeFormat.FullDateTimePattern);
         }
     }
 }

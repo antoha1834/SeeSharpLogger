@@ -2,7 +2,8 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
-		<Version>1.0.1</Version>
+		<!--net6.0;net7.0;-->
+		<Version>2.0.0</Version>
 		<Authors>antoha1834</Authors>
 		<PackageId>SeeSharpLogger</PackageId>
 		<Title>SeeSharpLogger</Title>
