@@ -167,6 +167,7 @@ Disables file logging and flushes all queued log entries to the current log file
 Log.EnableLogToFile("LogsFolder", "<Date> <Time> main.log");
 Log.WriteLine("Hello there!");
 Log.DisableLogToFile();
+Log.WriteLine("This message was written after disabling");
 // File content:
 [Timestamp] [*] [Anonymous] Hello there!
 ```
