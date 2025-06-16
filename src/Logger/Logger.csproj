@@ -15,10 +15,10 @@
 		<PackageProjectUrl>https://github.com/antoha1834/SeeSharpLogger</PackageProjectUrl>
 		<IncludeSymbols>true</IncludeSymbols>
 		<IncludeSource>true</IncludeSource>
-		<GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AssemblyName>$(MSBuildProjectName).$(Version).$(TargetFramework)</AssemblyName>
-		<PackageIcon>icon128.png</PackageIcon>
+		<PackageIcon>icon.png</PackageIcon>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -29,10 +29,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="icons\icon128.png">
-	    <Pack>True</Pack>
-	    <PackagePath>\</PackagePath>
-	  </None>
+		<None Include="images\icon.png" Pack="true" PackagePath=""/>
 	</ItemGroup>
 
 </Project>
