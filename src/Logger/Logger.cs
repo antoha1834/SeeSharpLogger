@@ -151,7 +151,7 @@ namespace SeeSharpLogger
         public static class Exceptions
         {
             /// <summary>
-            /// Occurs with the Log(string name, string channel) constructor when there is no channel with the specified name
+            /// <see cref="NonExistingLogChannelException"/> occurs with the Log(string name, string channel) constructor when there is no channel with the specified name
             /// </summary>
             public static bool ThrowOnNonExistingChannel { get; set; } = false;
         }
@@ -162,7 +162,7 @@ namespace SeeSharpLogger
         public static string DefaultSource { get; set; } = "Anonymous";
 
         /// <summary>
-        /// Prefix for unknown LogState (you will never see it... at least i hope)
+        /// Prefix for unknown LogState
         /// </summary>
         public static string DefaultPrefix { get; set; } = "[?] ";
 
@@ -170,6 +170,13 @@ namespace SeeSharpLogger
         /// Should timestamp be added by default?
         /// </summary>
         public static bool AddTimeStamp { get; set; } = true;
+
+        /// <summary>
+        /// Default LogFileChannel channel for static calls (set <see cref="null"/> to disable)
+        /// </summary>
+        #nullable enable
+        public static string? DefaultChannel { get; set; }
+        #nullable disable
 
         /// <summary>
         /// Globally changes the prefix for one LogState
@@ -264,10 +271,10 @@ namespace SeeSharpLogger
         /// <summary>
         /// Writes a new line with the specified LogState
         /// </summary>
-        public void WriteLine(object? message = null, LogState state = LogState.Log)
+        public void WriteLine(object? message = null, LogState state = LogState.Log, bool writeToFile = true)
         {
             string result = CoreWrite(message + Environment.NewLine, Name, AddTimeStamp, state);
-            if (_logFileChannel != null)
+            if (_logFileChannel != null && writeToFile)
                 LogFileChannel.Write(_logFileChannel, result);
         }
 
@@ -302,10 +309,11 @@ namespace SeeSharpLogger
         /// <summary>
         /// Writes a new line with the specified LogState and source
         /// </summary>
-        public static void WriteLine(object? message = null, string? from = null, LogState state = LogState.Log)
+        public static void WriteLine(object? message = null, string? from = null, LogState state = LogState.Log, bool writeToFile = true)
         {
             from ??= LogManager.DefaultSource;
-            CoreWrite(message + Environment.NewLine, from, LogManager.AddTimeStamp, state);
+            if (writeToFile && LogManager.DefaultChannel != null)
+                CoreWrite(message + Environment.NewLine, from, LogManager.AddTimeStamp, state);
         }
 
         /// <summary>
